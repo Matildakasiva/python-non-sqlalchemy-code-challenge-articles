@@ -1,14 +1,15 @@
+import ipdb;
 
-class Article: 
+class Article:
     all = []
-    def __init__(self, author, magazine, title):
+    def __init__(self, author: 'Author', magazine: 'Magazine', title: str):
         if not isinstance(author, Author):
             raise Exception("Author must be an instance of Author")
-        self.author = author
+        self._author = author
 
         if not isinstance(magazine, Magazine):
             raise Exception("Magazine must be an instance of Magazine")
-        self.magazine = magazine
+        self._magazine = magazine
 
         if not isinstance(title, str) or 5 > len(title) or len(title) > 50:
             raise Exception("The title must be a string with characters between 5 and 50")
@@ -21,87 +22,89 @@ class Article:
         return self._title
     
     @title.setter
-    def title(self, value):
-        if not isinstance(value, str):
+    def title(self, magazine_name):
+        if not isinstance(magazine_name, str):
             raise Exception("Title must be a string")
-        if len(value) < 5 or len(value) > 50:
+        if len(magazine_name) < 5 or len(magazine_name) > 50:
             raise Exception("Title must be a string between 5 and 50 characters long")
-        self._title = value
+        self._title = magazine_name
 
     @property
     def author(self):
         return self._author
     
     @author.setter
-    def author(self, value):
-        if not isinstance(value, Author):
+    def author(self, magazine_name):
+        if not isinstance(magazine_name, Author):
             raise Exception("Author must be an instance of Author")
-        self._author = value
+        self._author = magazine_name
 
     @property
     def magazine(self):
         return self._magazine  
 
     @magazine.setter
-    def magazine(self, value):
-        if not isinstance(value, Magazine):
+    def magazine(self, magazine_name):
+        if not isinstance(magazine_name, Magazine):
             raise Exception("Magazine must be an instance of Magazine")  
-        self._magazine = value    
+        self._magazine = magazine_name    
    
         
 class Author:
-    all = []
 
     def __init__(self, name):
-        if not isinstance(name, str) or len(name) == 0:
-            raise Exception("The author name should be a string with a character length greater than 0")
+        if not isinstance(name, str):
+            raise Exception("The author name should be a string")
+        if len(name) == 0:
+            raise Exception("The author name should have a character length greater than 0")
         self._name = name
-        self._articles = []
-        self.magazines = set()
-        self.all.append(self)
         
     @property
     def name(self):
         return self._name
     
     @name.setter
-    def name(self, value):
-        if not isinstance(value, str):
-            raise Exception("Name must be a string")
-        if len(value) == 0:
-            raise Exception("Name must be a non-empty string")
-        self._name = value
+    def name(self, author_name):
+        if hasattr(self, '_name'):
+            raise Exception("Should not be able to change the author after instantiated.")
+        if not isinstance(author_name, str):
+            raise Exception("The name should be a type of string")
+        if len(author_name) <= 0:
+            raise Exception("The name should be longer than 0 characters")
+        self._name = author_name
 
     def articles(self):
-        return self._articles
+        return [article for article in Article.all if article.author == self]
     
     def magazines(self):
-        return list(set(article.magazine for article in self._articles))
+        return list(set(article.magazine for article in Article.all if article.author == self))
 
     def add_article(self, magazine, title):
-        article = Article(title, self, magazine)
-        self.articles.append(article)
-        self.magazines.append(magazine)
+        article = Article(self, magazine, title)
+        return article
 
     def topic_areas(self):
-        if not self._articles:
-            return None
-        return list(set(magazine.category for article in self._articles for magazine in [article.magazine]))
-
-
+         if not self.articles:
+             return None
+         return list(set(magazine.category for magazine in self.magazines()))
+    
 class Magazine:
-    all = []
+    all_magazines = []
 
-    def __init__(self, name: str, category: str):
-        if not isinstance(name, str) or (2 > len(name) or len(name) > 16):
-            raise Exception("The magazine name should be a string with characters between 2 and 16, inclusive")
-        if not isinstance(category, str) or len(category) == 0:
-            raise Exception("The magazine category should be a string with characters longer than 0, inclusive")
-        self.name = name
-        self.category = category
-        self.articles = []
-        self.contributors = set()
-        self.all.append(self)
+    def __init__(self, name, category):
+        if not isinstance(name, str):
+            raise Exception("The magazine name should be a string")
+        if len(name) < 2 or len(name) > 16:
+            raise Exception("The magazine name should have characters between 2 and 16, inclusive")
+        self._name = name
+
+        if not isinstance(category, str):
+            raise Exception("The magazine category should be a string")
+        if len(category) == 0:
+            raise Exception("The magazine category should have characters longer than 0, inclusive")
+        self._category = category
+        self._articles = []
+        Magazine.all_magazines.append(self)
 
     @property
     def name(self):
@@ -109,8 +112,10 @@ class Magazine:
 
     @name.setter
     def name(self, value):
-        if not isinstance(value, str) or (2 > len(value) or len(value) > 16):
-            raise Exception("The magazine name should be a string with characters between 2 and 16, inclusive")
+        if not isinstance(value, str):
+            raise Exception("The magazine name should be a string")
+        if len(value) < 2 or len(value) > 16:
+            raise Exception("The magazine name should have characters between 2 and 16, inclusive")
         self._name = value
 
     @property
@@ -118,31 +123,39 @@ class Magazine:
         return self._category
 
     @category.setter
-    def category(self, value):
-        if not isinstance(value, str) or len(value) == 0:
-            raise Exception("The magazine category should be a string with characters longer than 0, inclusive")
-        self._category = value
-
-    def add_article(self, article):
-        self._articles.append(article)
+    def category(self, new_category):
+        if not isinstance(new_category, str):
+            raise Exception("The magazine category should be a string")
+        if len(new_category) == 0:
+            raise Exception("The magazine category should have characters longer than 0, inclusive")
+        self._category = new_category
 
     def articles(self):
         return [article for article in Article.all if article.magazine == self]
-
+    
     def contributors(self):
-        return list(set(article.author for article in self._articles))
-
+        return list(set(article.author for article in Article.all if article.magazine == self ))
+        
     def article_titles(self):
-        return [article.title for article in self.articles]
+        if not self._articles:
+            return None
+        return [article.title for article in self._articles]
 
     def contributing_authors(self):
-        authors = set()
+        authors = {}
         for article in self._articles:
-            authors.append(article.author)
-        return [author for author in authors if len(authors.articles) > 2]
+            if article.author in authors:
+                authors[article.author] += 1
+            else:
+                authors[article.author] = 1
+        return [author for author, count in authors.items() if count > 2]
+    
+    #instances
+    # author_1 = Author("Carry Bradshaw")
+    # author_2 = Author("Nathaniel Hawthorne")
+    # magazine_1 = Magazine("Vogue", "Fashion")
+    # Article(author_1, magazine_1, "How to wear a tutu with style")
+    # Article(author_1, magazine_1, "How to be single and happy")
+    # Article(author_2, magazine_1, "Dating life in NYC")
 
-    @classmethod
-    def top_publisher(cls):
-        if not cls.all:
-            return None
-        return max(cls._all_magazines, key=lambda magazine: len(magazine.articles))
+   
