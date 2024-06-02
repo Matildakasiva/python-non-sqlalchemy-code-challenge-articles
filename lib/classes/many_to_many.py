@@ -1,7 +1,9 @@
-import ipdb;
 
 class Article:
     all = []
+    
+    # all - is an empty list, stores instances of Article
+
     def __init__(self, author: 'Author', magazine: 'Magazine', title: str):
         if not isinstance(author, Author):
             raise Exception("Author must be an instance of Author")
@@ -16,6 +18,7 @@ class Article:
         self.title = title
         
         Article.all.append(self)
+        magazine._articles.append(self)
 
     @property
     def title(self):
@@ -76,17 +79,23 @@ class Author:
     def articles(self):
         return [article for article in Article.all if article.author == self]
     
+    # Article returns a list (written by author)
+
     def magazines(self):
         return list(set(article.magazine for article in Article.all if article.author == self))
+    
+    # magazine returns a list (written by author)
 
     def add_article(self, magazine, title):
         article = Article(self, magazine, title)
         return article
 
     def topic_areas(self):
-         if not self.articles:
-             return None
-         return list(set(magazine.category for magazine in self.magazines()))
+      if not self.articles():
+        return None
+      return list(set(magazine.category for magazine in self.magazines()))
+    
+    # returns a list of all magazine categories written by author if 0 returns None
     
 class Magazine:
     all_magazines = []
@@ -131,15 +140,17 @@ class Magazine:
         self._category = new_category
 
     def articles(self):
-        return [article for article in Article.all if article.magazine == self]
+        return self._articles
     
     def contributors(self):
-        return list(set(article.author for article in Article.all if article.magazine == self ))
+        return list(set(article.author for article in self._articles ))
+    # returns a list of authors who have written in the magazine
         
     def article_titles(self):
         if not self._articles:
             return None
         return [article.title for article in self._articles]
+    # returns a list of articles published in magazine
 
     def contributing_authors(self):
         authors = {}
@@ -148,14 +159,10 @@ class Magazine:
                 authors[article.author] += 1
             else:
                 authors[article.author] = 1
-        return [author for author, count in authors.items() if count > 2]
+        contributing_authors = [author for author, count in authors.items() if count > 2]
+        if not contributing_authors:
+            return None
+        return contributing_authors
+    # returns a list of authors who have written more than two magazine articles
     
-    #instances
-    # author_1 = Author("Carry Bradshaw")
-    # author_2 = Author("Nathaniel Hawthorne")
-    # magazine_1 = Magazine("Vogue", "Fashion")
-    # Article(author_1, magazine_1, "How to wear a tutu with style")
-    # Article(author_1, magazine_1, "How to be single and happy")
-    # Article(author_2, magazine_1, "Dating life in NYC")
-
-   
+    
