@@ -1,3 +1,10 @@
+uploading video:
+
+https://github.com/learn-co-curriculum/python-non-sqlalchemy-code-challenge-articles/assets/162135052/d856cdcf-273f-47be-a938-eba707a600f4
+
+
+
+
 # Phase 3 Code Challenge: Articles - without SQLAlchemy (Updated)
 
 In this code challenge, you will be working with a Magazine domain.
